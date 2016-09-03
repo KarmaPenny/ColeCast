@@ -6,3 +6,6 @@ app/.idea/libraries
 .DS_Store
 app/build
 app/captures
+bin/
+obj/
+*.suo
