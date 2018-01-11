@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">ColeCast</string>
+    <color name="trackPadColor">#E0E0E0</color>
+    <color name="toolBarColor">#00FFFFFF</color>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_favorites">Favorites</string>
+    <string name="title_activity_pair">Pair</string>
+</resources>
