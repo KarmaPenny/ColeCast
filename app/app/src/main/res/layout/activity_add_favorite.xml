@@ -1,0 +1,92 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.colecast.colecast.AddFavorite"
+    android:focusable="true"
+    android:focusableInTouchMode="true">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="55dp"
+        android:background="@color/primary"
+        android:id="@+id/titleMenu"
+        android:paddingLeft="4dp"
+        android:paddingRight="4dp">
+
+        <ImageView
+            android:layout_width="54dp"
+            android:layout_height="54dp"
+            android:layout_columnWeight="1"
+            android:paddingTop="14dp"
+            android:paddingBottom="14dp"
+            android:src="@mipmap/ic_launcher"
+            android:id="@+id/appIcon"/>
+
+        <EditText
+            android:id="@+id/name"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_toEndOf="@+id/appIcon"
+            android:layout_toLeftOf="@+id/addButton"
+            android:layout_toStartOf="@+id/addButton"
+            android:gravity="left|center_vertical"
+            android:imeOptions="actionDone"
+            android:inputType="textNoSuggestions"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:text="Enter Name"
+            android:textColor="@color/text_header"
+            android:textSize="24sp" />
+
+        <ImageView
+            android:id="@+id/deleteButton"
+            android:layout_width="54dp"
+            android:layout_height="match_parent"
+            android:layout_alignBottom="@+id/title"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:clickable="true"
+            android:onClick="DeleteFavorite"
+            android:src="@drawable/trash" />
+
+    </RelativeLayout>
+
+    <ImageView
+        android:id="@+id/icon"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/titleMenu"
+        android:clickable="true"
+        android:onClick="SelectIcon"
+        android:src="@drawable/error"
+        android:padding="16dp"
+        android:background="#DDDDDD" />
+
+    <EditText
+        android:id="@+id/url"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/saveButton"
+        android:layout_below="@+id/icon"
+        android:text="Enter URL"
+        android:gravity="left|top"
+        android:padding="16dp"
+        android:imeOptions="actionDone"
+        android:inputType="textNoSuggestions|textMultiLine"
+        android:hyphenationFrequency="none"
+        android:breakStrategy="high_quality"
+        android:selectAllOnFocus="true"/>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_alignParentBottom="true"
+        android:text="Save"
+        android:layout_marginRight="5dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginBottom="5dp"
+        android:id="@+id/saveButton"
+        android:onClick="SaveFavorite" />
+
+</RelativeLayout>

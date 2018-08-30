@@ -1,14 +1,21 @@
 package com.colecast.colecast;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.Context;
 import android.os.AsyncTask;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.TextView;
+
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -17,12 +24,36 @@ import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-public class MainActivity extends AppCompatActivity {
-    //IP address of the the htpc
-    private byte[] ip = { (byte)192, (byte)168, (byte)1, (byte)106 };
+public class MainActivity extends Activity {
+    //region PROPERTIES
+    public static JSONObject device = new JSONObject();
+    public static InetAddress DeviceIP() {
+        try {
+            return InetAddress.getByName(device.getString("ip"));
+        } catch (Exception e) {}
+        return null;
+    }
+    public static byte[] DeviceMAC() {
+        try {
+            String mac = device.getString("mac").replace(":", "").toLowerCase();
+            int len = mac.length();
+            byte[] data = new byte[len/2];
+            for(int i = 0; i < len; i+=2){
+                data[i/2] = (byte) ((Character.digit(mac.charAt(i), 16) << 4) + Character.digit(mac.charAt(i+1), 16));
+            }
+            return data;
+        } catch (Exception e) {}
+        return new byte[] { (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00 };
+    }
+    public static String DeviceName() {
+        try {
+            return device.getString("name");
+        } catch (Exception e) {}
+        return "Not Connected";
+    }
 
-    //MAC address of the htpc
-    private byte[] mac = { 0x30, (byte)0x85, (byte)0xa9, (byte)0x8e, 0x7d, 0x51 };
+    //IP address of the the htpc
+    private byte[] broadcastIp = { (byte)255, (byte)255, (byte)255, (byte)255 };
 
     //PORT that the htpc is listening on
     private int port = 3129;
@@ -58,9 +89,9 @@ public class MainActivity extends AppCompatActivity {
 
         //ADVANCED CODES
         OpenUrl((byte)0x30),
-        Paste((byte)0x31),
-        FullScreen((byte)0x32),
-        ExitFullScreen((byte)0x33),
+
+        //keyboard controls
+        FullScreen((byte)0x33),
         CloseTab((byte)0x34),
         PreviousTrack((byte)0x35),
         PlayPause((byte)0x36),
@@ -71,12 +102,31 @@ public class MainActivity extends AppCompatActivity {
         OPCODE(byte value) { this.value = new byte[] { value }; }
         OPCODE(byte[] value) { this.value = value; }
     }
+    //endregion
 
+    //region ACTIVITY EVENTS
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        LoadHost();
+        // load device from file
+        try {
+            InputStream inputStream = openFileInput("device.json");
+            if ( inputStream != null ) {
+                InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+                device = new JSONObject(bufferedReader.readLine());
+                inputStream.close();
+            }
+        }
+        catch (Exception e) {
+            try {
+                device = new JSONObject();
+                device.put("name", "Cole's Desktop");
+                device.put("ip", "192.168.1.106");
+                device.put("mac", "00:1b:21:24:29:80");
+            } catch (Exception e2) {}
+        }
 
         setContentView(R.layout.activity_main);
         ((LinearLayout)findViewById(R.id.trackPad)).setOnTouchListener(new View.OnTouchListener() {
@@ -85,6 +135,20 @@ public class MainActivity extends AppCompatActivity {
                 return MouseEvent(event);
             }
         });
+
+        findViewById(R.id.VolumeDown).setOnTouchListener(new RepeatListener(750, 150, new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                VolumeDown();
+            }
+        }));
+
+        findViewById(R.id.VolumeUp).setOnTouchListener(new RepeatListener(750, 150, new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                VolumeUp();
+            }
+        }));
     }
 
     @Override
@@ -104,36 +168,31 @@ public class MainActivity extends AppCompatActivity {
                 intent.removeExtra(Intent.EXTRA_TEXT);
             }
         }
+
+        ((TextView)findViewById(R.id.title)).setText(DeviceName());
     }
 
     @Override
-     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == RESULT_OK) {
             if (requestCode == OPEN_FAVORITE) {
                 OpenUrl(data.getData().toString());
             }
-            else if (requestCode == SELECT_HOST) {
-                mac = data.getData().toString().getBytes();
-            }
         }
     }
+    //endregion
 
-    //ADVANCED CONTROLS
-    private void LoadHost() {
-        SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
-        String host = sharedPref.getString("CurrentHost", "none");
-        if (host != "none") {
-            SharedPreferences hosts = getSharedPreferences("com.colecast.colecast.hosts", Context.MODE_PRIVATE);
-            mac = hosts.getString(host, null).getBytes();
-        }
-    }
-
-    public void OpenSettings(View view) {}
-
+    //region ACTIVITIES
     public void OpenFavorites(View view) {
         startActivityForResult(new Intent(this, Favorites.class), OPEN_FAVORITE);
     }
 
+    public void OpenPair(View view) {
+        startActivityForResult(new Intent(this, Pair.class), SELECT_HOST);
+    }
+    //endregion
+
+    //region ADVANCED CONTROLS
     private void OpenUrl(String url) {
         new AsyncTask<String, Void, Void>() {
             protected Void doInBackground(String... params) {
@@ -143,29 +202,13 @@ public class MainActivity extends AppCompatActivity {
             }
         }.execute(url);
     }
+    //endregion
 
-    public void Paste(String text) {
-        new AsyncTask<String, Void, Void>() {
-            protected Void doInBackground(String... params) {
-                sendCommand(OPCODE.Paste, params);
-                return null;
-            }
-        }.execute(text);
-    }
-
+    //region KEYBOARD CONTROLS
     public void FullScreen(View view) {
         new AsyncTask<Void, Void, Void>() {
             protected Void doInBackground(Void... params) {
                 sendCommand(OPCODE.FullScreen);
-                return null;
-            }
-        }.execute();
-    }
-
-    public void ExitFullScreen(View view) {
-        new AsyncTask<Void, Void, Void>() {
-            protected Void doInBackground(Void... params) {
-                sendCommand(OPCODE.ExitFullScreen);
                 return null;
             }
         }.execute();
@@ -206,9 +249,10 @@ public class MainActivity extends AppCompatActivity {
             }
         }.execute();
     }
+    //endregion
 
-    //TV CONTROLS
-    public void VolumeUp(View view) {
+    //region TV CONTROLS
+    public void VolumeUp() {
         new AsyncTask<Void, Void, Void>() {
             protected Void doInBackground(Void... params) {
                 sendCommand(OPCODE.VolumeUp);
@@ -217,7 +261,7 @@ public class MainActivity extends AppCompatActivity {
         }.execute();
     }
 
-    public void VolumeDown(View view) {
+    public void VolumeDown() {
         new AsyncTask<Void, Void, Void>() {
             protected Void doInBackground(Void... params) {
                 sendCommand(OPCODE.VolumeDown);
@@ -234,17 +278,9 @@ public class MainActivity extends AppCompatActivity {
             }
         }.execute();
     }
+    //endregion
 
-    public void CycleInput(View view) {
-        new AsyncTask<Void, Void, Void>() {
-            protected Void doInBackground(Void... params) {
-                sendCommand(OPCODE.CycleInput);
-                return null;
-            }
-        }.execute();
-    }
-
-    //POWER CONTROLS
+    //region POWER CONTROLS
     public void TogglePower(View view) {
         new AsyncTask<Void, Void, Void>() {
             protected Void doInBackground(Void... params) {
@@ -256,17 +292,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean On() {
-        Log.d("TRACE", "ON");
-        sendCommand(OPCODE.Ping, mac);
-        Log.d("TRACE", "PING SENT");
+        sendCommand(OPCODE.Ping, DeviceMAC());
         DatagramPacket packet = getPacket();
-        Log.d("TRACE", "PONG RETURNED");
         if (packet == null) { return false; }
-        //ip = packet.getData();
         return true;
     }
 
     private void Wake() {
+        byte[] mac = DeviceMAC();
         long end = System.currentTimeMillis();
         end += 60*1000;
         byte[] wol = new byte[96];
@@ -276,17 +309,17 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         while (!On()) {
-            sendCommand(OPCODE.WakeOnLan, wol, 9);
+            broadcastCommand(OPCODE.WakeOnLan, wol, 9);
             if (System.currentTimeMillis() > end) break;
         }
-        sendCommand(OPCODE.Wake);
     }
 
     private void Sleep() {
         sendCommand(OPCODE.Sleep);
     }
+    //endregion
 
-    //MOUSE CONTROLS
+    //region MOUSE CONTROLS
     public boolean MouseEvent(MotionEvent event) {
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_POINTER_UP:
@@ -365,8 +398,9 @@ public class MainActivity extends AppCompatActivity {
         Log.i("Mouse", "RightButtonUp");
         sendCommand(OPCODE.RightMouseButtonUp);
     }
+    //endregion
 
-    //SOCKET IO
+    //region SOCKET IO
     private void sendCommand(OPCODE opcode) {
         sendPacket(opcode.value, port);
     }
@@ -402,10 +436,25 @@ public class MainActivity extends AppCompatActivity {
         sendPacket(buffer.array(), port);
     }
 
+    private void broadcastCommand(OPCODE opcode, byte[] args, int port) {
+        ByteBuffer buffer = ByteBuffer.allocate(args.length + opcode.value.length);
+        buffer.put(opcode.value);
+        buffer.put(args);
+        broadcastPacket(buffer.array(), port);
+    }
+
     private void sendPacket(byte[] data, int port) {
         try {
             DatagramSocket socket = new DatagramSocket();
-            socket.send(new DatagramPacket(data, data.length, InetAddress.getByAddress(ip), port));
+            socket.send(new DatagramPacket(data, data.length, DeviceIP(), port));
+            socket.close();
+        } catch (Exception e) { Log.e("ERROR", e.toString()); }
+    }
+
+    private void broadcastPacket(byte[] data, int port) {
+        try {
+            DatagramSocket socket = new DatagramSocket();
+            socket.send(new DatagramPacket(data, data.length, InetAddress.getByAddress(broadcastIp), port));
             socket.close();
         } catch (Exception e) { Log.e("ERROR", e.toString()); }
     }
@@ -426,5 +475,6 @@ public class MainActivity extends AppCompatActivity {
         catch (Exception e) { Log.e("ERROR", e.toString()); }
         return null;
     }
+    //endregion
 
 }
