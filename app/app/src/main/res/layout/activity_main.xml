@@ -1,139 +1,149 @@
-<GridLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:columnCount="6"
-    android:rowCount="3"
-    android:background="@color/trackPadColor"
-    tools:context=".MainActivity">
-    <ImageButton
-        android:contentDescription="@string/app_name"
-        android:background="@color/trackPadColor"
-        android:layout_width="54dp"
-        android:layout_height="54dp"
-        android:scaleType="fitXY"
-        android:layout_marginTop="5dp"
-        android:layout_marginBottom="5dp"
-        android:layout_gravity="fill"
-        android:layout_columnWeight="1"
-        android:src="@drawable/settings"
-        android:onClick="OpenSettings"/>
-    <ImageButton
-        android:contentDescription="@string/app_name"
-        android:background="@color/trackPadColor"
-        android:layout_width="wrap_content"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.colecast.colecast.MainActivity">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="55dp"
+        android:background="@color/primary"
+        android:id="@+id/titlebar"
+        android:paddingLeft="4dp"
+        android:paddingRight="4dp">
+
+        <ImageView
+            android:layout_width="54dp"
+            android:layout_height="54dp"
+            android:layout_columnWeight="1"
+            android:paddingTop="14dp"
+            android:paddingBottom="14dp"
+            android:src="@mipmap/ic_launcher"
+            android:id="@+id/appIcon"/>
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_alignParentTop="true"
+            android:layout_toEndOf="@+id/appIcon"
+            android:gravity="left|center_vertical"
+            android:text="Not Connected"
+            android:textColor="@color/text_header"
+            android:textSize="24sp" />
+
+        <ImageView
+            android:layout_width="54dp"
+            android:layout_height="match_parent"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentTop="true"
+            android:layout_columnWeight="1"
+            android:onClick="OpenPair"
+            android:padding="14dp"
+            android:src="@drawable/refresh" />
+    </RelativeLayout>
+
+    <GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/titleButtons"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:layout_marginBottom="5dp"
-        android:layout_gravity="fill"
-        android:layout_columnWeight="1"
-        android:src="@drawable/favorites"
-        android:onClick="OpenFavorites"/>
-    <ImageButton
-        android:contentDescription="@string/app_name"
-        android:background="@color/trackPadColor"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:layout_marginBottom="5dp"
-        android:layout_gravity="fill"
-        android:layout_columnWeight="1"
-        android:src="@drawable/power"
-        android:onClick="TogglePower"/>
-    <ImageButton
-        android:contentDescription="@string/app_name"
-        android:background="@color/trackPadColor"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:layout_marginBottom="5dp"
-        android:layout_gravity="fill"
-        android:layout_columnWeight="1"
-        android:src="@drawable/input"
-        android:onClick="CycleInput"/>
-    <ImageButton
-        android:contentDescription="@string/app_name"
-        android:background="@color/trackPadColor"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:layout_marginBottom="5dp"
-        android:layout_gravity="fill"
-        android:layout_columnWeight="1"
-        android:src="@drawable/close"
-        android:onClick="CloseTab"/>
-    <ImageButton
-        android:contentDescription="@string/app_name"
-        android:background="@color/trackPadColor"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:layout_marginBottom="5dp"
-        android:layout_gravity="fill"
-        android:layout_columnWeight="1"
-        android:src="@drawable/fullscreen"
-        android:onClick="FullScreen"/>
-    <ImageButton
-        android:contentDescription="@string/app_name"
-        android:background="@color/trackPadColor"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="fill"
-        android:layout_columnWeight="1"
-        android:src="@drawable/previous"
-        android:onClick="PreviousTrack"/>
-    <ImageButton
-        android:contentDescription="@string/app_name"
-        android:background="@color/trackPadColor"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="fill"
-        android:layout_columnWeight="1"
-        android:src="@drawable/playpause"
-        android:onClick="PlayPause"/>
-    <ImageButton
-        android:contentDescription="@string/app_name"
-        android:background="@color/trackPadColor"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="fill"
-        android:layout_columnWeight="1"
-        android:src="@drawable/next"
-        android:onClick="NextTrack"/>
-    <ImageButton
-        android:contentDescription="@string/app_name"
-        android:background="@color/trackPadColor"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="fill"
-        android:layout_columnWeight="1"
-        android:src="@drawable/mute"
-        android:onClick="Mute"/>
-    <ImageButton
-        android:contentDescription="@string/app_name"
-        android:background="@color/trackPadColor"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="fill"
-        android:layout_columnWeight="1"
-        android:src="@drawable/volumedown"
-        android:onClick="VolumeDown"/>
-    <ImageButton
-        android:contentDescription="@string/app_name"
-        android:background="@color/trackPadColor"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="fill"
-        android:layout_columnWeight="1"
-        android:src="@drawable/volumeup"
-        android:onClick="VolumeUp"/>
-    <LinearLayout
-        android:id="@+id/trackPad"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_columnSpan="6"
-        android:orientation="vertical"
-        android:background="@color/trackPadColor">
-    </LinearLayout>
-</GridLayout>
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/titlebar"
+        android:background="#555555"
+        android:columnCount="5"
+        android:rowCount="2"
+        android:paddingBottom="3dp"
+        android:paddingTop="3dp"
+        tools:context=".MainActivity">
+
+        <ImageView
+            android:layout_width="54dp"
+            android:layout_height="54dp"
+            android:layout_columnWeight="1"
+            android:onClick="PreviousTrack"
+            android:padding="16dp"
+            android:src="@drawable/previous" />
+
+        <ImageView
+            android:layout_width="54dp"
+            android:layout_height="54dp"
+            android:layout_columnWeight="1"
+            android:onClick="PlayPause"
+            android:padding="16dp"
+            android:src="@drawable/playpause" />
+
+        <ImageView
+            android:layout_width="54dp"
+            android:layout_height="54dp"
+            android:layout_columnWeight="1"
+            android:onClick="NextTrack"
+            android:padding="16dp"
+            android:src="@drawable/next" />
+
+        <ImageView
+            android:layout_width="54dp"
+            android:layout_height="54dp"
+            android:layout_columnWeight="1"
+            android:onClick="OpenFavorites"
+            android:padding="15dp"
+            android:src="@drawable/favorites" />
+
+        <ImageView
+            android:layout_width="54dp"
+            android:layout_height="54dp"
+            android:layout_columnWeight="1"
+            android:onClick="TogglePower"
+            android:padding="16dp"
+            android:src="@drawable/power" />
+
+        <ImageView
+            android:layout_width="54dp"
+            android:layout_height="54dp"
+            android:layout_columnWeight="1"
+            android:onClick="Mute"
+            android:padding="15dp"
+            android:src="@drawable/mute" />
+
+        <ImageView
+            android:layout_width="54dp"
+            android:layout_height="54dp"
+            android:layout_columnWeight="1"
+            android:id="@+id/VolumeDown"
+            android:padding="15dp"
+            android:src="@drawable/volumedown" />
+
+        <ImageView
+            android:layout_width="54dp"
+            android:layout_height="54dp"
+            android:layout_columnWeight="1"
+            android:id="@+id/VolumeUp"
+            android:padding="15dp"
+            android:src="@drawable/volumeup" />
+
+        <ImageView
+            android:layout_width="54dp"
+            android:layout_height="54dp"
+            android:layout_columnWeight="1"
+            android:onClick="CloseTab"
+            android:padding="18dp"
+            android:src="@drawable/close" />
+
+        <ImageView
+            android:layout_width="54dp"
+            android:layout_height="54dp"
+            android:layout_columnWeight="1"
+            android:onClick="FullScreen"
+            android:padding="10dp"
+            android:src="@drawable/fullscreen" />
+    </GridLayout>
+
+<LinearLayout
+    android:id="@+id/trackPad"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:layout_below="@+id/titleButtons"
+    android:background="@color/trackPadColor">
+</LinearLayout>
+
+</RelativeLayout>

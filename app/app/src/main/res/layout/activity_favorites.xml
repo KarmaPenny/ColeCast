@@ -1,15 +1,56 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:layout_height="match_parent"
     tools:context="com.colecast.colecast.Favorites">
 
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="55dp"
+        android:background="@color/primary"
+        android:id="@+id/titleMenu"
+        android:paddingLeft="4dp"
+        android:paddingRight="4dp">
+
+        <ImageView
+            android:layout_width="54dp"
+            android:layout_height="54dp"
+            android:layout_columnWeight="1"
+            android:paddingTop="14dp"
+            android:paddingBottom="14dp"
+            android:src="@mipmap/ic_launcher"
+            android:id="@+id/appIcon"/>
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_alignParentTop="true"
+            android:layout_toEndOf="@+id/appIcon"
+            android:gravity="left|center_vertical"
+            android:text="Favorites"
+            android:textColor="@color/text_header"
+            android:textSize="24sp" />
+
+        <ImageView
+            android:id="@+id/addButton"
+            android:layout_width="54dp"
+            android:layout_height="match_parent"
+            android:layout_alignBottom="@+id/title"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:clickable="true"
+            android:onClick="AddNewFavorite"
+            android:paddingBottom="16dp"
+            android:paddingTop="16dp"
+            android:src="@drawable/add" />
+
+    </RelativeLayout>
+
     <GridView
-        android:id="@+id/listview"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:numColumns="4"/>
+        android:id="@+id/favorites"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/titleMenu"
+        android:numColumns="3"/>
 
 </RelativeLayout>
