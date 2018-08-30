@@ -1,30 +1,33 @@
 ﻿using CERTENROLLLib;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Drawing;
 using System.Windows.Forms;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
+using System.ServiceProcess;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.IO.Ports;
+using WindowsInput;
 
 namespace ColeCast
 {
     public class Receiver
     {
-        private int port;
+        private Thread listener;
         private volatile bool done = false;
+        private InputSimulator virtualInput = new InputSimulator();
         private Dictionary<byte, Action<IPEndPoint, byte[]>> operations = new Dictionary<byte, Action<IPEndPoint, byte[]>>();
 
-        public Receiver(int port)
+        public Receiver()
         {
-            this.port = port;
             //POWER CONTROLS
             operations.Add(0x00, Ping);
             operations.Add(0x01, Sleep);
@@ -46,21 +49,14 @@ namespace ColeCast
 
             //ADVANCED CONTROLS
             operations.Add(0x30, OpenUrl);
-            operations.Add(0x31, Paste);
-            operations.Add(0x32, Escape);
+
+            //KEYBOARD CONTROLS
+            operations.Add(0x35, PrevKey);
+            operations.Add(0x36, PlayKey);
+            operations.Add(0x37, NextKey);
         }
 
         #region ADVANCED CONTROLS
-
-        private void Escape(IPEndPoint sender, byte[] parmeters)
-        {
-            
-        }
-
-        private void Paste(IPEndPoint sender, byte[] parmeters)
-        {
-            
-        }
 
         private void OpenUrl(IPEndPoint sender, byte[] parameters)
         {
@@ -98,7 +94,7 @@ namespace ColeCast
         {
             ExLink(new byte[] { 0x08, 0x22, 0x01, 0x00, 0x02, 0x00, 0xd3 });
         }
-        
+
         private void VolumeUp(IPEndPoint sender, byte[] parmeters)
         {
             ExLink(new byte[] { 0x08, 0x22, 0x01, 0x00, 0x01, 0x00, 0xd4 });
@@ -110,7 +106,7 @@ namespace ColeCast
 
         private void Ping(IPEndPoint sender, byte[] parameters)
         {
-            UdpClient response = new UdpClient(sender.Address.ToString(), port);
+            UdpClient response = new UdpClient(sender.Address.ToString(), Config.port);
             response.Send(new byte[] { 0x01 }, 1);
         }
 
@@ -167,20 +163,44 @@ namespace ColeCast
 
         #endregion
 
+        #region KEYBOARD CONTROLS
+
+        private void PrevKey(IPEndPoint sender, byte[] parameters)
+        {
+            virtualInput.Keyboard.KeyPress(WindowsInput.Native.VirtualKeyCode.MEDIA_PREV_TRACK);
+        }
+
+        private void NextKey(IPEndPoint sender, byte[] parameters)
+        {
+            virtualInput.Keyboard.KeyPress(WindowsInput.Native.VirtualKeyCode.MEDIA_NEXT_TRACK);
+        }
+
+        private void PlayKey(IPEndPoint sender, byte[] parameters)
+        {
+            virtualInput.Keyboard.KeyPress(WindowsInput.Native.VirtualKeyCode.MEDIA_PLAY_PAUSE);
+        }
+
+        private void EscKey(IPEndPoint sender, byte[] parameters)
+        {
+            virtualInput.Keyboard.KeyPress(WindowsInput.Native.VirtualKeyCode.ESCAPE);
+        }
+
+        #endregion
+
         #region IO
 
         private void ExLink(byte[] code)
         {
-            SerialPort exLinkPort = new SerialPort("COM4", 9600, Parity.None, 8, StopBits.One);
+            SerialPort exLinkPort = new SerialPort(Config.com, 9600, Parity.None, 8, StopBits.One);
             exLinkPort.Open();
             exLinkPort.Write(code, 0, code.Length);
             exLinkPort.Close();
         }
 
-        public void Start()
+        private void Listen()
         {
-            UdpClient request = new UdpClient(port);
-            IPEndPoint sender = new IPEndPoint(IPAddress.Any, port);
+            UdpClient request = new UdpClient(Config.port);
+            IPEndPoint sender = new IPEndPoint(IPAddress.Any, Config.port);
             while (!done)
             {
                 try
@@ -191,6 +211,18 @@ namespace ColeCast
                 }
                 catch (Exception e) { }
             }
+        }
+
+        public void Start()
+        {
+            done = false;
+            listener = new Thread(Listen);
+            listener.Start();
+        }
+
+        public void Stop()
+        {
+            done = true;
         }
 
         #endregion
