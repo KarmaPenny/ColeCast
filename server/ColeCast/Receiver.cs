@@ -1,27 +1,21 @@
-﻿using CERTENROLLLib;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
-using System.Drawing;
 using System.Windows.Forms;
-using System.IO;
-using System.Linq;
 using System.Net;
-using System.Security.Cryptography.X509Certificates;
-using System.ServiceProcess;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Net.Sockets;
-using System.Runtime.InteropServices;
 using System.IO.Ports;
 using WindowsInput;
+using Microsoft.Win32;
+using System.Net.NetworkInformation;
 
 namespace ColeCast
 {
     public class Receiver
     {
         private Thread listener;
+        private Thread broadcaster;
         private volatile bool done = false;
         private InputSimulator virtualInput = new InputSimulator();
         private Dictionary<byte, Action<IPEndPoint, byte[]>> operations = new Dictionary<byte, Action<IPEndPoint, byte[]>>();
@@ -31,7 +25,6 @@ namespace ColeCast
             //POWER CONTROLS
             operations.Add(0x00, Ping);
             operations.Add(0x01, Sleep);
-            operations.Add(0x02, Wake);
 
             //MOUSE CONTROLS
             operations.Add(0x10, MoveCursor);
@@ -51,9 +44,15 @@ namespace ColeCast
             operations.Add(0x30, OpenUrl);
 
             //KEYBOARD CONTROLS
+            operations.Add(0x33, FullScreen);
+            operations.Add(0x34, CloseWindow);
             operations.Add(0x35, PrevKey);
             operations.Add(0x36, PlayKey);
             operations.Add(0x37, NextKey);
+
+            // detect power state changes
+            SystemEvents.PowerModeChanged += OnPowerChange;
+            SystemEvents.SessionEnded += OnShutDown;
         }
 
         #region ADVANCED CONTROLS
@@ -71,6 +70,16 @@ namespace ColeCast
 
         private int currentInput = 1;
 
+        private void TVOn()
+        {
+            ExLink(new byte[] { 0x08, 0x22, 0x00, 0x00, 0x00, 0x02, 0xd4 });
+        }
+
+        private void TVOff()
+        {
+            ExLink(new byte[] { 0x08, 0x22, 0x00, 0x00, 0x00, 0x01, 0xd5 });
+        }
+
         private void Mute(IPEndPoint sender, byte[] parameters)
         {
             ExLink(new byte[] { 0x08, 0x22, 0x02, 0x00, 0x00, 0x00, 0xd4 });
@@ -78,16 +87,16 @@ namespace ColeCast
 
         private void CycleInput(IPEndPoint sender, byte[] parmeters)
         {
-            if (currentInput == 1)
-            {
-                ExLink(new byte[] { 0x08, 0x22, 0x0a, 0x00, 0x05, 0x01, 0xc6 });
-                currentInput = 2;
-            }
-            else
-            {
-                ExLink(new byte[] { 0x08, 0x22, 0x0a, 0x00, 0x05, 0x00, 0xc7 });
-                currentInput = 1;
-            }
+            //if (currentInput == 1)
+            //{
+            //    ExLink(new byte[] { 0x08, 0x22, 0x0a, 0x00, 0x05, 0x01, 0xc6 });
+            //    currentInput = 2;
+            //}
+            //else
+            //{
+            //    ExLink(new byte[] { 0x08, 0x22, 0x0a, 0x00, 0x05, 0x00, 0xc7 });
+            //    currentInput = 1;
+            //}
         }
 
         private void VolumeDown(IPEndPoint sender, byte[] parmeters)
@@ -112,16 +121,24 @@ namespace ColeCast
 
         private void Sleep(IPEndPoint sender, byte[] parameters)
         {
-            ExLink(new byte[] { 0x08, 0x22, 0x00, 0x00, 0x00, 0x01, 0xd5 });
             Application.SetSuspendState(PowerState.Suspend, true, true);
         }
 
-        private void Wake(IPEndPoint sender, byte[] parmeters)
+        private void OnPowerChange(object s, PowerModeChangedEventArgs e)
         {
-            ExLink(new byte[] { 0x08, 0x22, 0x00, 0x00, 0x00, 0x02, 0xd4 });
-            Thread.Sleep(100);
-            currentInput = 2;
-            CycleInput(sender, parmeters);
+            if (e.Mode == PowerModes.Resume)
+            {
+                TVOn();
+            }
+            else if (e.Mode == PowerModes.Suspend)
+            {
+                TVOff();
+            }
+        }
+
+        private void OnShutDown(object s, EventArgs e)
+        {
+            TVOff();
         }
 
         #endregion
@@ -177,12 +194,21 @@ namespace ColeCast
 
         private void PlayKey(IPEndPoint sender, byte[] parameters)
         {
-            virtualInput.Keyboard.KeyPress(WindowsInput.Native.VirtualKeyCode.MEDIA_PLAY_PAUSE);
+            //virtualInput.Keyboard.KeyPress(WindowsInput.Native.VirtualKeyCode.MEDIA_PLAY_PAUSE);
+            virtualInput.Keyboard.KeyPress(WindowsInput.Native.VirtualKeyCode.SPACE);
         }
 
-        private void EscKey(IPEndPoint sender, byte[] parameters)
+        private void FullScreen(IPEndPoint sender, byte[] parameters)
         {
-            virtualInput.Keyboard.KeyPress(WindowsInput.Native.VirtualKeyCode.ESCAPE);
+            virtualInput.Keyboard.KeyPress(WindowsInput.Native.VirtualKeyCode.VK_F);
+        }
+
+        private void CloseWindow(IPEndPoint sender, byte[] parameters)
+        {
+            // press alt + f4
+            virtualInput.Keyboard.KeyDown(WindowsInput.Native.VirtualKeyCode.LMENU);
+            virtualInput.Keyboard.KeyPress(WindowsInput.Native.VirtualKeyCode.F4);
+            virtualInput.Keyboard.KeyUp(WindowsInput.Native.VirtualKeyCode.LMENU);
         }
 
         #endregion
@@ -213,11 +239,50 @@ namespace ColeCast
             }
         }
 
+        private PhysicalAddress GetMAC()
+        {
+            foreach (NetworkInterface nic in NetworkInterface.GetAllNetworkInterfaces())
+            {
+                if (nic.NetworkInterfaceType != NetworkInterfaceType.Ethernet)
+                    continue;
+                if (nic.OperationalStatus != OperationalStatus.Up)
+                    continue;
+
+                return nic.GetPhysicalAddress();
+            }
+            return null;
+        }
+
+        private void BroadCast()
+        {
+            while (!done)
+            {
+                try
+                {
+                    UdpClient client = new UdpClient();
+                    IPEndPoint endpoint = new IPEndPoint(IPAddress.Broadcast, 3128);
+                    string mac = GetMAC().ToString();
+                    for (int i = 2; i <= 14; i += 3)
+                    {
+                        mac = mac.Insert(i, ":");
+                    }
+                    byte[] bytes = Encoding.ASCII.GetBytes(mac + "|" + Environment.MachineName);
+                    client.Send(bytes, bytes.Length, endpoint);
+                    client.Close();
+                }
+                catch (Exception e) { }
+                Thread.Sleep(1000);
+            }
+        }
+
         public void Start()
         {
+            TVOn();
             done = false;
             listener = new Thread(Listen);
             listener.Start();
+            broadcaster = new Thread(BroadCast);
+            broadcaster.Start();
         }
 
         public void Stop()
