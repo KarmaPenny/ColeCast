@@ -6,7 +6,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="55dp"
-        android:background="@color/primary"
+        android:background="@color/title_bar"
         android:id="@+id/titlebar"
         android:paddingLeft="4dp"
         android:paddingRight="4dp">
@@ -17,7 +17,8 @@
             android:layout_columnWeight="1"
             android:paddingTop="14dp"
             android:paddingBottom="14dp"
-            android:src="@mipmap/ic_launcher"
+            android:src="@drawable/menu"
+            android:onClick="OpenPair"
             android:id="@+id/appIcon"/>
 
         <TextView
@@ -30,16 +31,6 @@
             android:text="Not Connected"
             android:textColor="@color/text_header"
             android:textSize="24sp" />
-
-        <ImageView
-            android:layout_width="54dp"
-            android:layout_height="match_parent"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentTop="true"
-            android:layout_columnWeight="1"
-            android:onClick="OpenPair"
-            android:padding="14dp"
-            android:src="@drawable/refresh" />
     </RelativeLayout>
 
     <GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -49,7 +40,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/titlebar"
-        android:background="#555555"
+        android:background="#4B617A"
         android:columnCount="5"
         android:rowCount="2"
         android:paddingBottom="3dp"

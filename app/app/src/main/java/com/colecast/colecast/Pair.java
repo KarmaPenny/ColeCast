@@ -163,6 +163,11 @@ public class Pair extends Activity {
         socket.close();
     }
 
+    public void Back(View v) {
+        // close the add favorite activity
+        finish();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

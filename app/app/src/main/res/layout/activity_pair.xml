@@ -6,7 +6,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="55dp"
-        android:background="@color/primary"
+        android:background="@color/title_bar"
         android:id="@+id/titleMenu"
         android:paddingLeft="4dp"
         android:paddingRight="4dp">
@@ -17,7 +17,8 @@
             android:layout_columnWeight="1"
             android:paddingTop="14dp"
             android:paddingBottom="14dp"
-            android:src="@mipmap/ic_launcher"
+            android:src="@drawable/back"
+            android:onClick="Back"
             android:id="@+id/appIcon"/>
 
         <TextView

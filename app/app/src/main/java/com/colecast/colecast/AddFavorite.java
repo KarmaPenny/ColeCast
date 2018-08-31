@@ -71,6 +71,11 @@ public class AddFavorite extends Activity {
         finish();
     }
 
+    public void Back(View v) {
+        // close the add favorite activity
+        finish();
+    }
+
     void Save() {
         try {
             Log.d("SAVE", Favorites.saveData.toString());
