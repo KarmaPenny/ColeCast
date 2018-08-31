@@ -3,6 +3,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.Context;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -203,6 +204,11 @@ public class MainActivity extends Activity {
 
     public void OpenPair(View view) {
         startActivityForResult(new Intent(this, Pair.class), SELECT_HOST);
+    }
+
+    public void OpenReadme(View v) {
+        Intent intent= new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/KarmaPenny/ColeCast/blob/master/README.md"));
+        startActivity(intent);
     }
     //endregion
 

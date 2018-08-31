@@ -9,3 +9,4 @@ app/captures
 bin/
 obj/
 *.suo
+app/app/release/
