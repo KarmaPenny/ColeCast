@@ -59,7 +59,7 @@ class FavoritesAdapter extends BaseAdapter {
             Uri uri = Uri.fromFile(file);
             ((ImageView) view.findViewById(R.id.icon)).setImageURI(uri);
         } else {
-            ((ImageView) view.findViewById(R.id.icon)).setImageResource(R.drawable.error);
+            ((ImageView) view.findViewById(R.id.icon)).setImageResource(R.drawable.favoriteicon);
         }
 
         return view;

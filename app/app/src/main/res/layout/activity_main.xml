@@ -51,9 +51,9 @@
             android:layout_width="54dp"
             android:layout_height="54dp"
             android:layout_columnWeight="1"
-            android:onClick="PreviousTrack"
             android:padding="16dp"
-            android:src="@drawable/previous" />
+            android:src="@drawable/previous"
+            android:id="@+id/prev"/>
 
         <ImageView
             android:layout_width="54dp"
@@ -61,15 +61,15 @@
             android:layout_columnWeight="1"
             android:onClick="PlayPause"
             android:padding="16dp"
-            android:src="@drawable/playpause" />
+            android:src="@drawable/playpause"/>
 
         <ImageView
             android:layout_width="54dp"
             android:layout_height="54dp"
             android:layout_columnWeight="1"
-            android:onClick="NextTrack"
             android:padding="16dp"
-            android:src="@drawable/next" />
+            android:src="@drawable/next"
+            android:id="@+id/next"/>
 
         <ImageView
             android:layout_width="54dp"

@@ -122,9 +122,9 @@ public class MainActivity extends Activity {
         catch (Exception e) {
             try {
                 device = new JSONObject();
-                device.put("name", "Cole's Desktop");
-                device.put("ip", "192.168.1.106");
-                device.put("mac", "00:1b:21:24:29:80");
+                device.put("name", "Not Connected");
+                device.put("ip", "127.0.0.1");
+                device.put("mac", "00:00:00:00:00:00");
             } catch (Exception e2) {}
         }
 
@@ -147,6 +147,20 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View view) {
                 VolumeUp();
+            }
+        }));
+
+        findViewById(R.id.prev).setOnTouchListener(new RepeatListener(1000, 250, new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                PreviousTrack();
+            }
+        }));
+
+        findViewById(R.id.next).setOnTouchListener(new RepeatListener(1000, 250, new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                NextTrack();
             }
         }));
     }
@@ -223,7 +237,7 @@ public class MainActivity extends Activity {
         }.execute();
     }
 
-    public void PreviousTrack(View view) {
+    public void PreviousTrack() {
         new AsyncTask<Void, Void, Void>() {
             protected Void doInBackground(Void... params) {
                 sendCommand(OPCODE.PreviousTrack);
@@ -241,7 +255,7 @@ public class MainActivity extends Activity {
         }.execute();
     }
 
-    public void NextTrack(View view) {
+    public void NextTrack() {
         new AsyncTask<Void, Void, Void>() {
             protected Void doInBackground(Void... params) {
                 sendCommand(OPCODE.NextTrack);

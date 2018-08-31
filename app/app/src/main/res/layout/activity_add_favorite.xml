@@ -47,6 +47,8 @@
             android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
             android:clickable="true"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
             android:onClick="DeleteFavorite"
             android:src="@drawable/trash" />
 
@@ -60,7 +62,7 @@
         android:layout_below="@+id/titleMenu"
         android:clickable="true"
         android:onClick="SelectIcon"
-        android:src="@drawable/error"
+        android:src="@drawable/favoriteicon"
         android:padding="16dp"
         android:background="#DDDDDD" />
 

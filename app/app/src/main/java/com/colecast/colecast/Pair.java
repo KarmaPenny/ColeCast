@@ -1,6 +1,8 @@
 package com.colecast.colecast;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Color;
 import android.os.Handler;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,7 +17,10 @@ import android.widget.TextView;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -49,6 +54,8 @@ class DevicesAdapter extends BaseAdapter {
         View view = inflater.inflate(R.layout.item_device, parent, false);
 
         // set the text values
+        int color = (Pair.DeviceIsSelected(index)) ? 0xFFCFDEEE : 0x00CFDEEE;
+        view.findViewById(R.id.background).setBackgroundColor(color);
         ((TextView) view.findViewById(R.id.name)).setText(Pair.GetDeviceName(index));
         ((TextView) view.findViewById(R.id.mac)).setText("MAC: " + Pair.GetDeviceMAC(index));
         ((TextView) view.findViewById(R.id.ip)).setText("IPv4: " + Pair.GetDeviceIP(index));
@@ -60,12 +67,13 @@ class DevicesAdapter extends BaseAdapter {
 public class Pair extends Activity {
     static DevicesAdapter devicesAdapter;
     public static JSONObject devicesJSON = new JSONObject();
+    public static JSONObject selectedDevices = new JSONObject();
     private String broadcastIp = "255.255.255.255";
     private int port = 3128;
     DatagramSocket socket;
     Thread UDPBroadcastThread;
     Boolean listening;
-    Context context;
+    static Context context;
 
     public static int GetDevicesCount() {
         return devicesJSON.length();
@@ -110,8 +118,26 @@ public class Pair extends Activity {
             device.put("ip", ip);
             device.put("mac", mac);
             devicesJSON.put(name, device);
+            Save();
             devicesAdapter.notifyDataSetChanged();
         } catch (Exception e) {}
+    }
+
+    public static void ToggleSelection(int index) {
+        String name = GetDeviceName(index);
+        if (selectedDevices.has(name)) {
+            selectedDevices.remove(name);
+        } else {
+            try {
+                selectedDevices.put(name, true);
+            } catch (Exception e) {}
+        }
+        devicesAdapter.notifyDataSetChanged();
+    }
+
+    public static boolean DeviceIsSelected(int index) {
+        String name = GetDeviceName(index);
+        return selectedDevices.has(name);
     }
 
     private void ReceiveDeviceInfo() throws Exception {
@@ -168,6 +194,43 @@ public class Pair extends Activity {
         finish();
     }
 
+    public void DeleteSelected(View v) {
+        try {
+            JSONArray devices = selectedDevices.names();
+            for (int i = 0; i < devices.length(); i++) {
+                String name = devices.getString(i);
+                devicesJSON.remove(name);
+                Save();
+            }
+        } catch (Exception e) {}
+        selectedDevices = new JSONObject();
+        devicesAdapter.notifyDataSetChanged();
+    }
+
+    void Load() {
+        try {
+            // load data from file
+            InputStream inputStream = openFileInput("devices.json");
+            if ( inputStream != null ) {
+                InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+                devicesJSON = new JSONObject(bufferedReader.readLine());
+                inputStream.close();
+            }
+        }
+        catch (Exception e) {}
+    }
+
+    static void Save() {
+        try {
+            // save data to file
+            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(context.openFileOutput("devices.json", Context.MODE_PRIVATE));
+            outputStreamWriter.write(devicesJSON.toString());
+            outputStreamWriter.close();
+        }
+        catch (IOException e) {}
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -175,7 +238,9 @@ public class Pair extends Activity {
 
         context = this;
 
-        devicesJSON = new JSONObject();
+        // load saved devices
+        Load();
+        selectedDevices = new JSONObject();
 
         ListView deviceList = (ListView) findViewById(R.id.devices);
         devicesAdapter = new DevicesAdapter(this);
@@ -196,6 +261,14 @@ public class Pair extends Activity {
 
                 // close activity
                 finish();
+            }
+        });
+
+        deviceList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapter, View v, int position, long id) {
+                ToggleSelection(position);
+                return true;
             }
         });
 

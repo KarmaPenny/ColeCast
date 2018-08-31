@@ -78,7 +78,6 @@ public class AddFavorite extends Activity {
 
     void Save() {
         try {
-            Log.d("SAVE", Favorites.saveData.toString());
             // save data to file
             OutputStreamWriter outputStreamWriter = new OutputStreamWriter(openFileOutput("favorites.json", Context.MODE_PRIVATE));
             outputStreamWriter.write(Favorites.saveData.toString());
@@ -91,8 +90,6 @@ public class AddFavorite extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_favorite);
-
-        Log.d("onCreate", "selected = " + Favorites.selected);
 
         if (Favorites.selected >= 0) {
             // set favorite name
@@ -109,7 +106,7 @@ public class AddFavorite extends Activity {
                 Uri uri = Uri.fromFile(file);
                 ((ImageView) findViewById(R.id.icon)).setImageURI(uri);
             } else {
-                ((ImageView) findViewById(R.id.icon)).setImageResource(R.drawable.error);
+                ((ImageView) findViewById(R.id.icon)).setImageResource(R.drawable.favoriteicon);
             }
         }
     }
