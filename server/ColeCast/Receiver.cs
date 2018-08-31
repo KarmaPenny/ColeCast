@@ -185,11 +185,13 @@ namespace ColeCast
         private void PrevKey(IPEndPoint sender, byte[] parameters)
         {
             virtualInput.Keyboard.KeyPress(WindowsInput.Native.VirtualKeyCode.MEDIA_PREV_TRACK);
+            virtualInput.Keyboard.KeyPress(WindowsInput.Native.VirtualKeyCode.LEFT);
         }
 
         private void NextKey(IPEndPoint sender, byte[] parameters)
         {
             virtualInput.Keyboard.KeyPress(WindowsInput.Native.VirtualKeyCode.MEDIA_NEXT_TRACK);
+            virtualInput.Keyboard.KeyPress(WindowsInput.Native.VirtualKeyCode.RIGHT);
         }
 
         private void PlayKey(IPEndPoint sender, byte[] parameters)
