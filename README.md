@@ -1,5 +1,5 @@
 # ColeCast
-ColeCast lets you control your home theater PC (HTPC) with your smartphone over the local network.
+ColeCast lets you control your HTPC with your smartphone over the local network.
 
 ## Setup
 
