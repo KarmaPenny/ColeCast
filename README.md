@@ -4,11 +4,11 @@ ColeCast lets you control your home theater PC (HTPC) with your smartphone over 
 ## Setup
 
 ### Installation
-1.) Download and install the latest ColeCast service on your HTPC. [Download Link](https://github.com/KarmaPenny/ColeCast/raw/master/release/CurrentVersion/ColeCast-Installer.msi)
+1.) Download and install the latest ColeCast service on your HTPC. [[Download Link](https://github.com/KarmaPenny/ColeCast/raw/master/release/CurrentVersion/ColeCast-Installer.msi)]
 
 2.) Install the ColeCast app on your android smartphone. [Direct APK Download](https://github.com/KarmaPenny/ColeCast/raw/master/release/CurrentVersion/ColeCast.apk)
 
-### ExLink (Optional)
+### ExLink (OPTIONAL)
 ExLink allows ColeCast to control the Power and Volume of your TV. To setup ExLink:
 
 1.) Connect your HTPC to your TV with an ExLink cable. 
