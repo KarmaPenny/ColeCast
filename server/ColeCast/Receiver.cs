@@ -38,7 +38,6 @@ namespace ColeCast
             operations.Add(0x20, VolumeUp);
             operations.Add(0x21, VolumeDown);
             operations.Add(0x22, Mute);
-            operations.Add(0x23, CycleInput);
 
             //ADVANCED CONTROLS
             operations.Add(0x30, OpenUrl);
@@ -52,7 +51,7 @@ namespace ColeCast
 
             // detect power state changes
             SystemEvents.PowerModeChanged += OnPowerChange;
-            SystemEvents.SessionEnded += OnShutDown;
+            SystemEvents.SessionEnding += OnShutDown;
         }
 
         #region ADVANCED CONTROLS
@@ -68,45 +67,55 @@ namespace ColeCast
 
         #region TV CONTROLS
 
-        private int currentInput = 1;
-
         private void TVOn()
         {
-            ExLink(new byte[] { 0x08, 0x22, 0x00, 0x00, 0x00, 0x02, 0xd4 });
+            if (Config.GetBool("exlink_enabled"))
+            {
+                ExLink(Config.GetBytes("exlink_power_on"));
+            }
         }
 
         private void TVOff()
         {
-            ExLink(new byte[] { 0x08, 0x22, 0x00, 0x00, 0x00, 0x01, 0xd5 });
+            if (Config.GetBool("exlink_enabled"))
+            {
+                ExLink(Config.GetBytes("exlink_power_off"));
+            }
         }
 
         private void Mute(IPEndPoint sender, byte[] parameters)
         {
-            ExLink(new byte[] { 0x08, 0x22, 0x02, 0x00, 0x00, 0x00, 0xd4 });
+            if (Config.GetBool("exlink_enabled"))
+            {
+                ExLink(Config.GetBytes("exlink_mute"));
+            } else
+            {
+                MuteKey();
+            }
         }
-
-        private void CycleInput(IPEndPoint sender, byte[] parmeters)
-        {
-            //if (currentInput == 1)
-            //{
-            //    ExLink(new byte[] { 0x08, 0x22, 0x0a, 0x00, 0x05, 0x01, 0xc6 });
-            //    currentInput = 2;
-            //}
-            //else
-            //{
-            //    ExLink(new byte[] { 0x08, 0x22, 0x0a, 0x00, 0x05, 0x00, 0xc7 });
-            //    currentInput = 1;
-            //}
-        }
-
+        
         private void VolumeDown(IPEndPoint sender, byte[] parmeters)
         {
-            ExLink(new byte[] { 0x08, 0x22, 0x01, 0x00, 0x02, 0x00, 0xd3 });
+            if (Config.GetBool("exlink_enabled"))
+            {
+                ExLink(Config.GetBytes("exlink_volume_down"));
+            }
+            else
+            {
+                VolumeDownKey();
+            }
         }
 
         private void VolumeUp(IPEndPoint sender, byte[] parmeters)
         {
-            ExLink(new byte[] { 0x08, 0x22, 0x01, 0x00, 0x01, 0x00, 0xd4 });
+            if (Config.GetBool("exlink_enabled"))
+            {
+                ExLink(Config.GetBytes("exlink_volume_up"));
+            }
+            else
+            {
+                VolumeUpKey();
+            }
         }
 
         #endregion
@@ -115,7 +124,7 @@ namespace ColeCast
 
         private void Ping(IPEndPoint sender, byte[] parameters)
         {
-            UdpClient response = new UdpClient(sender.Address.ToString(), Config.port);
+            UdpClient response = new UdpClient(sender.Address.ToString(), Config.GetInt("port"));
             response.Send(new byte[] { 0x01 }, 1);
         }
 
@@ -136,9 +145,12 @@ namespace ColeCast
             }
         }
 
-        private void OnShutDown(object s, EventArgs e)
+        private void OnShutDown(object s, SessionEndingEventArgs e)
         {
-            TVOff();
+            if (e.Reason == SessionEndReasons.SystemShutdown)
+            {
+                TVOff();
+            }
         }
 
         #endregion
@@ -181,6 +193,20 @@ namespace ColeCast
         #endregion
 
         #region KEYBOARD CONTROLS
+        private void MuteKey()
+        {
+            virtualInput.Keyboard.KeyPress(WindowsInput.Native.VirtualKeyCode.VOLUME_MUTE);
+        }
+        
+        private void VolumeDownKey()
+        {
+            virtualInput.Keyboard.KeyPress(WindowsInput.Native.VirtualKeyCode.VOLUME_DOWN);
+        }
+
+        private void VolumeUpKey()
+        {
+            virtualInput.Keyboard.KeyPress(WindowsInput.Native.VirtualKeyCode.VOLUME_UP);
+        }
 
         private void PrevKey(IPEndPoint sender, byte[] parameters)
         {
@@ -219,7 +245,12 @@ namespace ColeCast
 
         private void ExLink(byte[] code)
         {
-            SerialPort exLinkPort = new SerialPort(Config.com, 9600, Parity.None, 8, StopBits.One);
+            string portName = Config.GetString("portName");
+            int baudRate = Config.GetInt("baudRate");
+            Parity parity = (Parity)Config.GetInt("parity");
+            int dataBits = Config.GetInt("dataBits");
+            StopBits stopBits = (StopBits)Config.GetInt("stopBits");
+            SerialPort exLinkPort = new SerialPort(portName, baudRate, parity, dataBits, stopBits);
             exLinkPort.Open();
             exLinkPort.Write(code, 0, code.Length);
             exLinkPort.Close();
@@ -227,8 +258,8 @@ namespace ColeCast
 
         private void Listen()
         {
-            UdpClient request = new UdpClient(Config.port);
-            IPEndPoint sender = new IPEndPoint(IPAddress.Any, Config.port);
+            UdpClient request = new UdpClient(Config.GetInt("port"));
+            IPEndPoint sender = new IPEndPoint(IPAddress.Any, Config.GetInt("port"));
             while (!done)
             {
                 try

@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.ServiceProcess;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO;
+using System.Diagnostics;
 
 namespace ColeCast
 {
@@ -12,14 +7,8 @@ namespace ColeCast
     {
         static void Main(string[] args)
         {
-            try
-            {
-                new Receiver().Start();
-            }
-            catch (Exception e)
-            {
-                File.WriteAllText("c:\\error.txt", e.Message);
-            }
+            Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.High;
+            new Receiver().Start();
         }
     }
 }
