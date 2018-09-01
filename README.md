@@ -6,7 +6,7 @@ ColeCast lets you control your HTPC with your smartphone over the local network.
 ### Installation
 1.) Download and install the latest ColeCast service on your HTPC. [Download Link](https://github.com/KarmaPenny/ColeCast/raw/master/release/CurrentVersion/ColeCast-Installer.msi)
 
-2.) Install the ColeCast app on your android smartphone via the [Google Play Store Link](https://play.google.com/store/apps/details?id=com.colerobinette.colecast) or [Direct APK Download](https://github.com/KarmaPenny/ColeCast/raw/master/release/CurrentVersion/ColeCast.apk)
+2.) Install the ColeCast app on your android smartphone via the [Google Play Store Link](https://play.google.com/store/apps/details?id=com.colecast.colecast) or [Direct APK Download](https://github.com/KarmaPenny/ColeCast/raw/master/release/CurrentVersion/ColeCast.apk)
 
 ### ExLink (OPTIONAL)
 ExLink allows ColeCast to control the Power and Volume of your TV. To setup ExLink:
